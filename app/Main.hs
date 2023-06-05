@@ -1,14 +1,36 @@
+{-# LANGUAGE BlockArguments #-}
+
 module Main where
 
-import Data.Aeson (eitherDecode)
+import qualified Data.Aeson
 import Data.ByteString.Lazy.Char8 (pack)
-import PointerSolver.Type.Metadata (Metadata)
+import Data.Function ((&))
+import PointerSolver.Solver.UDChain.UDChain (udChain)
+import qualified PointerSolver.Type.Function as Function
+import qualified PointerSolver.Type.Metadata as Metadata
+import Text.Show.Pretty (ppShow)
+
+metadata :: IO Metadata.Metadata
+metadata = do
+  let file = "dump2.json"
+  jsonStr <- readFile file
+  case Data.Aeson.decode $ pack jsonStr of
+    Nothing -> error ""
+    Just value -> return value
+
+-- For demo reason, handle main function only
+function :: IO Function.Function
+function =
+  metadata
+    & fmap
+      ( \meta ->
+          meta
+            & Metadata.functions
+            & filter (\f -> Function.name f == "main")
+            & head
+      )
 
 main :: IO ()
 main = do
-  let file = "dump.json"
-  jsonStr <- readFile file
-  let maybeValue = eitherDecode $ pack jsonStr :: Either String Metadata
-  case maybeValue of
-    Left err -> putStrLn err
-    Right value -> print value
+  f <- function
+  putStrLn $ ppShow $ udChain f

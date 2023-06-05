@@ -32,8 +32,9 @@ executable pointer-solver
         , aeson               ^>=2.1.2.1
         , base                ^>=4.16.4.0
         , bytestring
+        , containers
         , pointer-solver-lib
-        , text
+        , pretty-show
 
     ghc-options:      -Wunused-imports -Werror
     hs-source-dirs:   app
@@ -41,6 +42,10 @@ executable pointer-solver
 
 library pointer-solver-lib
     exposed-modules:
+        PointerSolver.Solver.FSM.States
+        PointerSolver.Solver.Solver
+        PointerSolver.Solver.UDChain.Context
+        PointerSolver.Solver.UDChain.UDChain
         PointerSolver.Type.BasicBlock.BasicBlock
         PointerSolver.Type.BasicBlock.Id
         PointerSolver.Type.ControlFlowGraph.BasicBlock
@@ -60,6 +65,7 @@ library pointer-solver-lib
         , aeson       ^>=2.1.2.1
         , base        ^>=4.16.4.0
         , containers
+        , mtl
         , text
         , vector
 

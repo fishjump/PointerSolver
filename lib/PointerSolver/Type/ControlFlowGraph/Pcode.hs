@@ -4,13 +4,14 @@
 module PointerSolver.Type.ControlFlowGraph.Pcode where
 
 import Data.Aeson (FromJSON, ToJSON)
+import Data.Set (Set)
 import GHC.Generics (Generic)
 import qualified PointerSolver.Type.Pcode.Id as Type.Pcode
 
 data Pcode where
   Pcode ::
-    { preds :: [Type.Pcode.Id],
-      succs :: [Type.Pcode.Id]
+    { preds :: Set Type.Pcode.Id,
+      succs :: Set Type.Pcode.Id
     } ->
     Pcode
   deriving (Generic, Show)
