@@ -1,26 +1,22 @@
 {-# LANGUAGE TupleSections #-}
 
-module PointerSolver.Solver.UDChain.UDChain (udChain) where
+module PointerSolver.Solver.UDChain.UDChain where
 
 import Data.Function ((&))
-import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (isJust)
 import qualified Data.Maybe as Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Debug.Trace (trace, traceShow)
 import PointerSolver.Solver.UDChain.Context (Context (Context))
 import qualified PointerSolver.Solver.UDChain.Context as Context
 import qualified PointerSolver.Type.ControlFlowGraph.ControlFlowGraph as CFG
-import qualified PointerSolver.Type.ControlFlowGraph.Pcode as CFG
 import qualified PointerSolver.Type.ControlFlowGraph.Pcode as CFG.Pcode
 import PointerSolver.Type.Function (Function)
 import qualified PointerSolver.Type.Function as Function
 import qualified PointerSolver.Type.Pcode.Id as Pcode
 import qualified PointerSolver.Type.Pcode.Pcode as Pcode
 import PointerSolver.Type.Varnode.Varnode (Varnode)
-import Text.Printf (printf)
 
 -- Given a function, a pcode id and a varnode, find where this varnode is defined
 -- A context is for one function
@@ -28,16 +24,16 @@ import Text.Printf (printf)
 -- 2. if it is not, recursively find the preds pcode
 defs :: Context -> Function -> Pcode.Id -> Varnode -> (Context, Set Pcode.Id)
 defs ctx func id varnode
-  | ctx `contains` (id, varnode) = (ctx, defSet ctx (id, varnode))
+  | contains (id, varnode) = (ctx, defSet (id, varnode))
   | otherwise =
       let defSet' = defs' Set.empty Set.empty func id varnode
-          ctx' = update ctx (id, varnode) defSet'
+          ctx' = update (id, varnode) defSet'
        in (ctx', defSet')
   where
     udMap = Context.udMap ctx
-    contains ctx k = udMap & Map.member k
-    defSet ctx k = udMap & Map.lookup k & Maybe.fromMaybe Set.empty
-    update ctx k v = Context (Map.insert k v udMap)
+    contains k = udMap & Map.member k
+    defSet k = udMap & Map.lookup k & Maybe.fromMaybe Set.empty
+    update k v = Context (Map.insert k v udMap)
 
 -- The helper function for defs
 -- 1. if a id is visited, just return it
@@ -75,18 +71,18 @@ defs' visited state func id varnode
               & maybe Set.empty CFG.Pcode.preds
        in Set.map (\id' -> defs' visited' s func id' varnode) preds & Set.foldr Set.union s
 
-udChain :: Function -> Map (Pcode.Id, Varnode) (Set Pcode.Id)
+udChain :: Function -> Context
 udChain function =
-  foldr
-    ( Map.union
-        . ( \(id, varnode) ->
-              defs ctx function id varnode
-                & fst
-                & Context.udMap
-          )
-    )
-    Map.empty
-    targets
+  targets
+    & foldr
+      ( \(id, varnode) ->
+          defs ctx function id varnode
+            & fst
+            & Context.udMap
+            & Map.union
+      )
+      Map.empty
+    & Context
   where
     ctx = Context.new
     pcodes = Function.pcodes function

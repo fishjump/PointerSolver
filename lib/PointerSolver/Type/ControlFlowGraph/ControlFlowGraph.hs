@@ -6,7 +6,6 @@ module PointerSolver.Type.ControlFlowGraph.ControlFlowGraph where
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import GHC.Generics (Generic)
-import PointerSolver.Type.BasicBlock.BasicBlock (BasicBlock)
 import qualified PointerSolver.Type.BasicBlock.Id as BasicBlock
 import qualified PointerSolver.Type.ControlFlowGraph.BasicBlock as ControlFlowGraph
 import qualified PointerSolver.Type.ControlFlowGraph.Pcode as ControlFlowGraph

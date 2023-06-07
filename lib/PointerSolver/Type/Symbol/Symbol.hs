@@ -4,7 +4,6 @@
 module PointerSolver.Type.Symbol.Symbol where
 
 import Data.Aeson (FromJSON, ToJSON)
-import Data.Map (Map)
 import GHC.Generics (Generic)
 import qualified PointerSolver.Type.Symbol.Id as Symbol
 import PointerSolver.Type.Varnode.Varnode (Varnode)

@@ -36,13 +36,43 @@ executable pointer-solver
         , pointer-solver-lib
         , pretty-show
 
-    ghc-options:      -Wunused-imports -Werror
+    ghc-options:
+        -Wunused-imports -Werror -Wunused-matches -Wunused-local-binds
+
     hs-source-dirs:   app
     default-language: Haskell2010
 
 library pointer-solver-lib
     exposed-modules:
+        PointerSolver.Solver.Context
         PointerSolver.Solver.FSM.States
+        PointerSolver.Solver.PcodeDeducer.BoolBinOp
+        PointerSolver.Solver.PcodeDeducer.BoolUnaryOp
+        PointerSolver.Solver.PcodeDeducer.Cast
+        PointerSolver.Solver.PcodeDeducer.CBranch
+        PointerSolver.Solver.PcodeDeducer.Copy
+        PointerSolver.Solver.PcodeDeducer.Float2Float
+        PointerSolver.Solver.PcodeDeducer.FloatBinOp
+        PointerSolver.Solver.PcodeDeducer.FloatLogicOp
+        PointerSolver.Solver.PcodeDeducer.FloatUnaryOp
+        PointerSolver.Solver.PcodeDeducer.Helper
+        PointerSolver.Solver.PcodeDeducer.Indirect
+        PointerSolver.Solver.PcodeDeducer.Int2Float
+        PointerSolver.Solver.PcodeDeducer.IntBinaryOp
+        PointerSolver.Solver.PcodeDeducer.IntLogicOp
+        PointerSolver.Solver.PcodeDeducer.IntUnaryOp
+        PointerSolver.Solver.PcodeDeducer.Jump
+        PointerSolver.Solver.PcodeDeducer.Load
+        PointerSolver.Solver.PcodeDeducer.MapPcodeOpToDeducer
+        PointerSolver.Solver.PcodeDeducer.MultiEqual
+        PointerSolver.Solver.PcodeDeducer.PcodeDeducer
+        PointerSolver.Solver.PcodeDeducer.Piece
+        PointerSolver.Solver.PcodeDeducer.PopCount
+        PointerSolver.Solver.PcodeDeducer.PtrAdd
+        PointerSolver.Solver.PcodeDeducer.PtrSub
+        PointerSolver.Solver.PcodeDeducer.Store
+        PointerSolver.Solver.PcodeDeducer.SubPiece
+        PointerSolver.Solver.PcodeDeducer.Trunc
         PointerSolver.Solver.Solver
         PointerSolver.Solver.UDChain.Context
         PointerSolver.Solver.UDChain.UDChain
@@ -55,6 +85,7 @@ library pointer-solver-lib
         PointerSolver.Type.Metadata
         PointerSolver.Type.Pcode.Id
         PointerSolver.Type.Pcode.Pcode
+        PointerSolver.Type.PcodeOp.PcodeOp
         PointerSolver.Type.Symbol.Id
         PointerSolver.Type.Symbol.Symbol
         PointerSolver.Type.Varnode.Varnode
@@ -66,8 +97,12 @@ library pointer-solver-lib
         , base        ^>=4.16.4.0
         , containers
         , mtl
+        , split
         , text
         , vector
+
+    ghc-options:
+        -Wunused-imports -Werror -Wunused-matches -Wunused-local-binds
 
     hs-source-dirs:   lib
     default-language: Haskell2010
