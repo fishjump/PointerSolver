@@ -73,6 +73,7 @@ library pointer-solver-lib
         PointerSolver.Solver.PcodeDeducer.Store
         PointerSolver.Solver.PcodeDeducer.SubPiece
         PointerSolver.Solver.PcodeDeducer.Trunc
+        PointerSolver.Solver.PcodeDeducer.UnknownOp
         PointerSolver.Solver.Solver
         PointerSolver.Solver.UDChain.Context
         PointerSolver.Solver.UDChain.UDChain

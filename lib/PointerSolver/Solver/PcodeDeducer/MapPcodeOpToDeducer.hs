@@ -30,6 +30,7 @@ import PointerSolver.Solver.PcodeDeducer.PtrSub (PtrSub (PtrSub))
 import PointerSolver.Solver.PcodeDeducer.Store (Store (Store))
 import PointerSolver.Solver.PcodeDeducer.SubPiece (SubPiece (SubPiece))
 import PointerSolver.Solver.PcodeDeducer.Trunc (Trunc (Trunc))
+import PointerSolver.Solver.PcodeDeducer.UnknownOp (UnknownOp (UnknownOp))
 import PointerSolver.Type.Pcode.Pcode (Pcode)
 import PointerSolver.Type.PcodeOp.PcodeOp (PcodeOp (..))
 
@@ -111,6 +112,7 @@ stage1Deducer POPCOUNT = deduceStage1 PopCount
 stage1Deducer MULTIEQUAL = deduceStage1 MultiEqual
 stage1Deducer CAST = deduceStage1 Cast
 stage1Deducer INDIRECT = deduceStage1 Indirect
+stage1Deducer UNKNOWN = deduceStage1 UnknownOp
 
 stage2Deducer :: PcodeOp -> Context -> Pcode -> Context
 -- Int Logic Op --
@@ -190,6 +192,7 @@ stage2Deducer POPCOUNT = deduceStage2 PopCount
 stage2Deducer MULTIEQUAL = deduceStage2 MultiEqual
 stage2Deducer CAST = deduceStage2 Cast
 stage2Deducer INDIRECT = deduceStage2 Indirect
+stage2Deducer UNKNOWN = deduceStage2 UnknownOp
 
 stage3Deducer :: PcodeOp -> Context -> Pcode -> Context
 -- Int Logic Op --
@@ -269,3 +272,4 @@ stage3Deducer POPCOUNT = deduceStage3 PopCount
 stage3Deducer MULTIEQUAL = deduceStage3 MultiEqual
 stage3Deducer CAST = deduceStage3 Cast
 stage3Deducer INDIRECT = deduceStage3 Indirect
+stage3Deducer UNKNOWN = deduceStage3 UnknownOp

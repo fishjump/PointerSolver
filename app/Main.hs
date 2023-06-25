@@ -8,6 +8,7 @@ import Data.Function ((&))
 import qualified Data.Map as Map
 import Data.Maybe (fromJust, isJust)
 import qualified Data.Set as Set
+import PointerSolver.Solver.Context (Context)
 import qualified PointerSolver.Solver.Context as Solver.Context
 import qualified PointerSolver.Solver.FSM.States as Type
 import PointerSolver.Solver.Solver (solveFunction)
@@ -15,34 +16,33 @@ import PointerSolver.Solver.UDChain.UDChain (udChain)
 import qualified PointerSolver.Type.Function as Function
 import qualified PointerSolver.Type.Metadata as Metadata
 import qualified PointerSolver.Type.Symbol.Symbol as Symbol
-import Text.Show.Pretty (ppShow)
 
 metadata :: IO Metadata.Metadata
 metadata = do
-  let file = "dump3.json"
+  let file = "bwaves_r_base.mytest-m64.json"
   jsonStr <- readFile file
-  case Data.Aeson.decode $ pack jsonStr of
-    Nothing -> error ""
-    Just value -> return value
+  case Data.Aeson.eitherDecode $ pack jsonStr of
+    Left err -> error err
+    Right value -> return value
 
--- For demo reason, handle main function only
+functions :: IO [Function.Function]
+functions = do
+  meta <- metadata
+  return $ meta & Metadata.functions
+
 function :: IO Function.Function
-function =
-  metadata
-    & fmap
-      ( \meta ->
-          meta
-            & Metadata.functions
-            & filter (\f -> Function.name f == "main")
-            & head
-      )
+function = do
+  meta <- metadata
+  return $ meta & Metadata.functions & head
 
-main :: IO ()
-main = do
-  f <- function
+handleFunction :: Function.Function -> Context
+handleFunction f = do
   let c = udChain f
   let result = solveFunction Solver.Context.new f c
+  result
 
+calResult :: Function.Function -> Context -> (Int, Int, Int, Int)
+calResult f ctx =
   let ghidraPositive =
         f
           & Function.symbols
@@ -52,40 +52,60 @@ main = do
           & map (\(_, s) -> Symbol.representative s & fromJust)
           & Set.fromList
 
-  let ghidraNegative =
+      ghidraNegative =
         f
           & Function.varnodes
           & Set.fromList
           & \x -> Set.difference x ghidraPositive
 
-  let solverPositive =
-        result
+      solverPositive =
+        ctx
           & Solver.Context.varnode2Type
           & Map.toList
           & filter (\(_, t) -> t == Type.Pointer)
           & map fst
           & Set.fromList
 
-  let solverNegative =
+      solverNegative =
         f
           & Function.varnodes
           & Set.fromList
           & \x -> Set.difference x solverPositive
 
-  -- True Positive
-  let tpSet = Set.intersection ghidraPositive solverPositive
+      -- True Positive
+      tpSet = Set.intersection ghidraPositive solverPositive
 
-  -- False Positive (in the solver but not in ghidra)
-  let fpSet = Set.difference solverPositive ghidraPositive
+      -- False Positive (in the solver but not in ghidra)
+      fpSet = Set.difference solverPositive ghidraPositive
 
-  -- True Negative
-  let tnSet = Set.intersection ghidraNegative solverNegative
+      -- True Negative
+      tnSet = Set.intersection ghidraNegative solverNegative
 
-  -- False Negative (in solver but not in the ghidra)
-  let fnSet = Set.difference solverNegative ghidraNegative
+      -- False Negative (in solver but not in the ghidra)
+      fnSet = Set.difference solverNegative ghidraNegative
+   in (Set.size tpSet, Set.size fpSet, Set.size tnSet, Set.size fnSet)
 
-  putStrLn $ "Result: " ++ ppShow result
-  putStrLn $ "True Positive: " ++ ppShow tpSet
-  putStrLn $ "False Positive: " ++ ppShow fpSet
-  putStrLn $ "True Negative: " ++ ppShow tnSet
-  putStrLn $ "False Negative: " ++ ppShow fnSet
+main :: IO ()
+main = do
+  fs <- functions
+  let ctxs = map handleFunction fs
+
+  print ctxs
+
+-- let results = zipWith calResult fs ctxs
+-- let merged = foldr (\(a, b, c, d) (a', b', c', d') -> (a + a', b + b', c + c', d + d')) (0, 0, 0, 0) results
+
+-- putStrLn "Result:"
+-- putStrLn $ "    True Positive: " ++ show (merged & (\(a, _, _, _) -> a))
+-- putStrLn $ "    False Positive: " ++ show (merged & (\(_, a, _, _) -> a))
+-- putStrLn $ "    True Negative: " ++ show (merged & (\(_, _, a, _) -> a))
+-- putStrLn $ "    False Negative: " ++ show (merged & (\(_, _, _, a) -> a))
+-- putStrLn $ "    Accuracy (Positive): " ++ show (merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b)))
+-- putStrLn $ "    Accuracy (Negative): " ++ show (merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b)))
+
+-- printf "True Positive: %d\n" $ merged & (\(a, _, _, _) -> a)
+-- printf "False Positive: %d\n" $ merged & (\(_, a, _, _) -> a)
+-- printf "True Negative: %d\n" $ merged & (\(_, _, a, _) -> a)
+-- printf "False Negative: %d\n" $ merged & (\(_, _, _, a) -> a)
+-- printf "Accuracy (Positive): %f\n" $ merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b))
+-- printf "Accuracy (Negative): %f\n" $ merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b))
