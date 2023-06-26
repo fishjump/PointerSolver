@@ -4,7 +4,6 @@
 module PointerSolver.Type.BasicBlock.BasicBlock where
 
 import Data.Aeson (FromJSON, ToJSON)
-import Data.Map (Map)
 import GHC.Generics (Generic)
 import qualified PointerSolver.Type.BasicBlock.Id as BasicBlock
 import qualified PointerSolver.Type.Pcode.Id as Pcode
