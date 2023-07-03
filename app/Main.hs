@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# OPTIONS_GHC -Wno-unused-local-binds #-}
 
 module Main where
 
@@ -19,7 +20,7 @@ import qualified PointerSolver.Type.Symbol.Symbol as Symbol
 
 metadata :: IO Metadata.Metadata
 metadata = do
-  let file = "bwaves_r_base.mytest-m64.json"
+  let file = "lbm_r_base.mytest-m64.json"
   jsonStr <- readFile file
   case Data.Aeson.eitherDecode $ pack jsonStr of
     Left err -> error err
@@ -90,22 +91,20 @@ main = do
   fs <- functions
   let ctxs = map handleFunction fs
 
-  print ctxs
+  let results = zipWith calResult fs ctxs
+  let merged = foldr (\(a, b, c, d) (a', b', c', d') -> (a + a', b + b', c + c', d + d')) (0, 0, 0, 0) results
 
--- let results = zipWith calResult fs ctxs
--- let merged = foldr (\(a, b, c, d) (a', b', c', d') -> (a + a', b + b', c + c', d + d')) (0, 0, 0, 0) results
+  putStrLn "Result:"
+  putStrLn $ "    True Positive: " ++ show (merged & (\(a, _, _, _) -> a))
+  putStrLn $ "    False Positive: " ++ show (merged & (\(_, a, _, _) -> a))
+  putStrLn $ "    True Negative: " ++ show (merged & (\(_, _, a, _) -> a))
+  putStrLn $ "    False Negative: " ++ show (merged & (\(_, _, _, a) -> a))
+  putStrLn $ "    Accuracy (Positive): " ++ show (merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b)))
+  putStrLn $ "    Accuracy (Negative): " ++ show (merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b)))
 
--- putStrLn "Result:"
--- putStrLn $ "    True Positive: " ++ show (merged & (\(a, _, _, _) -> a))
--- putStrLn $ "    False Positive: " ++ show (merged & (\(_, a, _, _) -> a))
--- putStrLn $ "    True Negative: " ++ show (merged & (\(_, _, a, _) -> a))
--- putStrLn $ "    False Negative: " ++ show (merged & (\(_, _, _, a) -> a))
--- putStrLn $ "    Accuracy (Positive): " ++ show (merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b)))
--- putStrLn $ "    Accuracy (Negative): " ++ show (merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b)))
-
--- printf "True Positive: %d\n" $ merged & (\(a, _, _, _) -> a)
--- printf "False Positive: %d\n" $ merged & (\(_, a, _, _) -> a)
--- printf "True Negative: %d\n" $ merged & (\(_, _, a, _) -> a)
--- printf "False Negative: %d\n" $ merged & (\(_, _, _, a) -> a)
--- printf "Accuracy (Positive): %f\n" $ merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b))
--- printf "Accuracy (Negative): %f\n" $ merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b))
+  -- printf "True Positive: %d\n" $ merged & (\(a, _, _, _) -> a)
+  -- printf "False Positive: %d\n" $ merged & (\(_, a, _, _) -> a)
+  -- printf "True Negative: %d\n" $ merged & (\(_, _, a, _) -> a)
+  -- printf "False Negative: %d\n" $ merged & (\(_, _, _, a) -> a)
+  -- printf "Accuracy (Positive): %f\n" $ merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b))
+  -- printf "Accuracy (Negative): %f\n" $ merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b))

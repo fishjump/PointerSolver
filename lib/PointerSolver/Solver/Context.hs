@@ -26,6 +26,3 @@ get k ctx = ctx & varnode2Type & Map.lookup k & fromMaybe Unknown
 
 set :: Varnode -> Type -> Context -> Context
 set k v ctx = ctx & varnode2Type & Map.insert k v & Context
-
-merge :: Context -> Context -> Context
-merge (Context m1) (Context m2) = Context $ Map.union m1 m2
