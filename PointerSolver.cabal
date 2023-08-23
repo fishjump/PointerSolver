@@ -30,7 +30,7 @@ executable pointer-solver
     -- other-extensions:
     build-depends:
         , aeson               ^>=2.1.2.1
-        , base                ^>=4.16.4.0
+        , base                ^>=4.18.0.0
         , bytestring
         , containers
         , pointer-solver-lib
@@ -95,7 +95,7 @@ library pointer-solver-lib
     -- other-extensions:
     build-depends:
         , aeson       ^>=2.1.2.1
-        , base        ^>=4.16.4.0
+        , base        ^>=4.18.0.0
         , containers
         , mtl
         , split
