@@ -36,17 +36,17 @@ data Use = Use {useVar :: Varnode, useLoc :: Loc}
 newtype UDChain = BlockSummary {udchain :: Map Use Def}
   deriving (Eq, Show)
 
-summaryBlock :: Function -> BasicBlockId -> UDChain
-summaryBlock bb = summaryBlock' newSummary pcodes
-  where
-    newSummary = BlockSummary {udchain = Map.empty}
-    pcodes = bb & BasicBlock.pcodes & reverse
+-- summaryBlock :: Function -> BasicBlockId -> UDChain
+-- summaryBlock bb = summaryBlock' newSummary pcodes
+--   where
+--     newSummary = BlockSummary {udchain = Map.empty}
+--     pcodes = bb & BasicBlock.pcodes & reverse
 
--- 对于每个pcode，检查当前的summary中有没有对应的内容
-summaryBlock' :: UDChain -> [Pcode] -> UDChain
-summaryBlock' c (x : xs) = undefined
-  where
-    op = 
+-- -- 对于每个pcode，检查当前的summary中有没有对应的内容
+-- summaryBlock' :: UDChain -> [Pcode] -> UDChain
+-- summaryBlock' c (x : xs) = undefined
+--   where
+--     op =
 
 -- Given a function, a pcode id and a varnode, find where this varnode is defined
 -- A context is for one function
