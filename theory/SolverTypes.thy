@@ -76,39 +76,74 @@ datatype PcodeOp = INT_EQUAL
   | INDIRECT
   | UNKNOWN
 
-record BasicBlock = 
+datatype BasicBlock = BasicBlock BasicBlockId string string "PcodeId list"
+
+(* record BasicBlock = 
     id :: BasicBlockId
     entry :: string
     exit :: string
-    pcodes :: "PcodeId list"
+    pcodes :: "PcodeId list" *)
 
-record Pcode =
+datatype Pcode = Pcode PcodeId PcodeOp BasicBlockId "Varnode list" "Varnode option"
+
+fun Pcode_Id :: "Pcode \<Rightarrow> PcodeId" where
+    "Pcode_Id (Pcode pcodeId _ _ _ _) = pcodeId"
+
+fun Pcode_Inputs :: "Pcode \<Rightarrow> Varnode list" where
+    "Pcode_Inputs (Pcode _ _ _ inputs _) = inputs"
+
+fun Pcode_Output :: "Pcode \<Rightarrow> Varnode option" where
+    "Pcode_Output (Pcode _ _ _ _ output) = output"
+
+(* record Pcode =
     id :: PcodeId
     operation :: PcodeOp
     parent :: BasicBlockId
     inputs :: "Varnode list"
-    pcodeOutput :: "Varnode option"
+    pcodeOutput :: "Varnode option" *)
 
-record Symbol =
+datatype Symbol = Symbol SymbolId string int bool "Varnode option"
+
+(* record Symbol =
     id :: SymbolId
     dataType :: string
     length :: int
     isPointer :: bool
-    representative :: "Varnode option"
+    representative :: "Varnode option" *)
 
-record BasicBlockControlFlow = 
+datatype BasicBlockControlFlow = BasicBlockControlFlow "BasicBlockId set" "BasicBlockId set"
+
+(* record BasicBlockControlFlow = 
     preds :: "BasicBlockId set"
-    succs :: "BasicBlockId set"
+    succs :: "BasicBlockId set" *)
 
-record PcodeControlFlow = 
+datatype PcodeControlFlow = PcodeControlFlow "PcodeId set" "PcodeId set"
+
+fun PcodeControlFlow_Preds :: "PcodeControlFlow \<Rightarrow> PcodeId set" where
+    "PcodeControlFlow_Preds (PcodeControlFlow preds _) = preds"
+
+(* record PcodeControlFlow = 
     preds :: "PcodeId set"
-    sucss :: "PcodeId set"
+    sucss :: "PcodeId set" *)
 
-record ControlFlowGraph =
+datatype ControlFlowGraph = ControlFlowGraph "(BasicBlockId, BasicBlockControlFlow) rbt" "(PcodeId, PcodeControlFlow) rbt"
+
+fun ControlFlowGraph_Pcodes :: "ControlFlowGraph \<Rightarrow> (PcodeId, PcodeControlFlow) rbt" where
+    "ControlFlowGraph_Pcodes (ControlFlowGraph _ pcodes) = pcodes"
+
+(* record ControlFlowGraph =
     basicblocks :: "(BasicBlockId, BasicBlockControlFlow) rbt"
-    pcodes :: "(PcodeId, PcodeControlFlow) rbt"
+    pcodes :: "(PcodeId, PcodeControlFlow) rbt" *)
 
-record Function =
+datatype Function = Function string string string "(BasicBlockId, BasicBlock) rbt" "(PcodeId, Pcode) rbt" "Varnode list" "(SymbolId, Symbol) rbt" ControlFlowGraph
+
+fun Function_Pcodes :: "Function \<Rightarrow> (PcodeId, Pcode) rbt" where
+    "Function_Pcodes (Function _ _ _ _ pcodes _ _ _) = pcodes"
+
+fun Function_Cfg :: "Function \<Rightarrow> ControlFlowGraph" where
+    "Function_Cfg (Function _ _ _ _ _ _ _ cfg) = cfg"
+
+(* record Function =
     name :: string
     entry :: string
     exit :: string
@@ -116,7 +151,7 @@ record Function =
     pcodes :: "(PcodeId, Pcode) rbt"
     varnodes :: "Varnode list"
     symbols :: "(SymbolId, Symbol) rbt"
-    cfg :: ControlFlowGraph
+    cfg :: ControlFlowGraph *)
 
 datatype Type = 
     Integer | 
@@ -191,5 +226,16 @@ proof (intro allI impI)
             t \<noteq> PointerOfPointer"
     then show "toSome t = Idle" by (cases t) auto
 qed
+
+type_synonym SolverContext = "(Varnode, Type) rbt"
+type_synonym UDChainContext = "(PcodeId \<times> Varnode, PcodeId set) rbt"
+
+class deducer =
+    fixes deduceStage1 :: "'a \<Rightarrow> SolverContext \<Rightarrow> Pcode \<Rightarrow> SolverContext"
+    fixes deduceStage2 :: "'a \<Rightarrow> SolverContext \<Rightarrow> Pcode \<Rightarrow> SolverContext"
+    fixes deduceStage3 :: "'a \<Rightarrow> SolverContext \<Rightarrow> Pcode \<Rightarrow> SolverContext"
+
+definition default_deduce :: "'a \<Rightarrow> SolverContext \<Rightarrow> Pcode \<Rightarrow> SolverContext" where
+    "default_deduce _ ctx _ = ctx"
 
 end 

@@ -3,20 +3,50 @@
 module PointerSolver.Solver.UDChain.UDChain where
 
 import Data.Function ((&))
+import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (isJust)
 import qualified Data.Maybe as Maybe
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.Vector.Fusion.Bundle.Size (Size (Unknown))
 import PointerSolver.Solver.UDChain.Context (Context (Context))
 import qualified PointerSolver.Solver.UDChain.Context as Context
+import PointerSolver.Type.BasicBlock.BasicBlock (BasicBlock (BasicBlock, pcodes))
+import qualified PointerSolver.Type.BasicBlock.BasicBlock as BasicBlock
 import qualified PointerSolver.Type.ControlFlowGraph.ControlFlowGraph as CFG
 import qualified PointerSolver.Type.ControlFlowGraph.Pcode as CFG.Pcode
 import PointerSolver.Type.Function (Function)
 import qualified PointerSolver.Type.Function as Function
 import qualified PointerSolver.Type.Pcode.Id as Pcode
 import qualified PointerSolver.Type.Pcode.Pcode as Pcode
-import PointerSolver.Type.Varnode.Varnode (Varnode)
+
+-- import PointerSolver.Type.Varnode.Varnode (Varnode)
+
+type Varnode = String
+
+type Loc = String
+
+data Def = KnownDef {defVar :: Varnode, defLoc :: Loc} | UnknownDef
+  deriving (Eq, Show)
+
+data Use = Use {useVar :: Varnode, useLoc :: Loc}
+  deriving (Eq, Show)
+
+newtype UDChain = BlockSummary {udchain :: Map Use Def}
+  deriving (Eq, Show)
+
+summaryBlock :: Function -> BasicBlockId -> UDChain
+summaryBlock bb = summaryBlock' newSummary pcodes
+  where
+    newSummary = BlockSummary {udchain = Map.empty}
+    pcodes = bb & BasicBlock.pcodes & reverse
+
+-- 对于每个pcode，检查当前的summary中有没有对应的内容
+summaryBlock' :: UDChain -> [Pcode] -> UDChain
+summaryBlock' c (x : xs) = undefined
+  where
+    op = 
 
 -- Given a function, a pcode id and a varnode, find where this varnode is defined
 -- A context is for one function

@@ -30,7 +30,7 @@ executable pointer-solver
     -- other-extensions:
     build-depends:
         , aeson               ^>=2.1.2.1
-        , base                ^>=4.18.0.0
+        , base                ^>=4.17.2.0
         , bytestring
         , containers
         , pointer-solver-lib
@@ -75,6 +75,7 @@ library pointer-solver-lib
         PointerSolver.Solver.PcodeDeducer.Trunc
         PointerSolver.Solver.PcodeDeducer.UnknownOp
         PointerSolver.Solver.Solver
+        PointerSolver.Solver.BasicBlockSolver
         PointerSolver.Solver.UDChain.Context
         PointerSolver.Solver.UDChain.UDChain
         PointerSolver.Type.BasicBlock.BasicBlock
@@ -90,12 +91,19 @@ library pointer-solver-lib
         PointerSolver.Type.Symbol.Id
         PointerSolver.Type.Symbol.Symbol
         PointerSolver.Type.Varnode.Varnode
+        PointerSolver.ControlflowGraph
+        PointerSolver.Parser.BasicBlock
+        PointerSolver.Parser.BasicBlockId
+        PointerSolver.Parser.Pcode
+        PointerSolver.Parser.PcodeOp
+        PointerSolver.Parser.PcodeId
+        PointerSolver.Parser.Metadata
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:
         , aeson       ^>=2.1.2.1
-        , base        ^>=4.18.0.0
+        , base        ^>=4.17.2.0
         , containers
         , mtl
         , split

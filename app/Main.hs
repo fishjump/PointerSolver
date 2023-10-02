@@ -20,7 +20,7 @@ import qualified PointerSolver.Type.Symbol.Symbol as Symbol
 
 metadata :: IO Metadata.Metadata
 metadata = do
-  let file = "lbm_r_base.mytest-m64.json"
+  let file = "main.json"
   jsonStr <- readFile file
   case Data.Aeson.eitherDecode $ pack jsonStr of
     Left err -> error err

@@ -7,41 +7,33 @@ begin
 
 type_synonym Context = "(PcodeId \<times> Varnode, PcodeId set) rbt"
 
-fun rbt_of_list :: "('a::linorder \<times> 'b) list \<Rightarrow> ('a, 'b) rbt" where
-  "rbt_of_list [] = RBT.empty" |
-  "rbt_of_list ((k, v) # xs) = RBT.insert k v (rbt_of_list xs)"
-
-definition my_rbt :: "Context" where
-  "my_rbt = rbt_of_list [((''123'', ''123A''), empty)]"
-
-value "the (RBT.lookup my_rbt (''123'', ''123A''))"
 
 function defs' :: "PcodeId set => PcodeId set => Function => PcodeId \<Rightarrow> Varnode \<Rightarrow> PcodeId set" where
     "defs' visited state func pcodeId varnode = (
         let visited' = insert pcodeId visited;
             state' = insert pcodeId state;
             isAssignment = (\<lambda>pId.
-                    let pcodeOpt = RBT.lookup (pcodes func) pId
+                    let pcodeOpt = RBT.lookup (Function_Pcodes func) pId
                     in case pcodeOpt of
                         None \<Rightarrow> False |
                         Some x \<Rightarrow> (
-                            case (pcodeOutput x) of
+                            case (Pcode_Output x) of
                                 None \<Rightarrow> False |
                                 Some _ \<Rightarrow> True));
             isOutputOf = (\<lambda>vnode pId.
-                    let pcodeOpt = RBT.lookup (pcodes func) pId
+                    let pcodeOpt = RBT.lookup (Function_Pcodes func) pId
                     in case pcodeOpt of
                         None \<Rightarrow> False |
                         Some x \<Rightarrow> (
-                            case (pcodeOutput x) of
+                            case (Pcode_Output x) of
                                 None \<Rightarrow> False |
                                 Some x' \<Rightarrow> x' = vnode));
             nextWithState = (\<lambda>s :: PcodeId set. 
-                    let pcodePredsOpt = RBT.lookup (ControlFlowGraph.pcodes (cfg func)) pcodeId;
+                    let pcodePredsOpt = RBT.lookup (ControlFlowGraph_Pcodes (Function_Cfg func)) pcodeId;
                         pcodePreds = (
                             case pcodePredsOpt of
                                 None \<Rightarrow> empty | 
-                                Some x \<Rightarrow> (PcodeControlFlow.preds x));
+                                Some x \<Rightarrow> (PcodeControlFlow_Preds x));
                         mappedPcodePreds = map 
                             (\<lambda>pcodeId' \<Rightarrow> defs' visited' s func pcodeId' varnode) 
                             (sorted_list_of_set pcodePreds)
@@ -70,8 +62,8 @@ by auto
 function udChain :: "Function \<Rightarrow> Context" where
     "udChain function = (
         let ctx = RBT.empty;
-            pcodes = Function.pcodes function;
-            zipPcode = (\<lambda>p. map (\<lambda>x. (Pcode.id p, x)) (Pcode.inputs p));
+            pcodes = Function_Pcodes function;
+            zipPcode = (\<lambda>p. map (\<lambda>x. (Pcode_Id p, x)) (Pcode_Inputs p));
             targets = map (\<lambda>pId. zipPcode (the (RBT.lookup pcodes pId))) (RBT.keys pcodes);
             targets' = concat targets
         in foldr (\<lambda>(pId, varnode). 
