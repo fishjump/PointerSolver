@@ -33,6 +33,7 @@ executable pointer-solver
         , base                ^>=4.17.2.0
         , bytestring
         , containers
+        , json                ^>=0.11
         , pointer-solver-lib
         , pretty-show
 
@@ -44,6 +45,16 @@ executable pointer-solver
 
 library pointer-solver-lib
     exposed-modules:
+        PointerSolver.ControlflowGraph
+        PointerSolver.Parser.BasicBlock
+        PointerSolver.Parser.BasicBlockId
+        PointerSolver.Parser.Metadata
+        PointerSolver.Parser.Pcode
+        PointerSolver.Parser.PcodeId
+        PointerSolver.Parser.PcodeOp
+        PointerSolver.Parser.Symbol
+        PointerSolver.Parser.SymbolId
+        PointerSolver.Solver.BasicBlockSolver
         PointerSolver.Solver.Context
         PointerSolver.Solver.FSM.States
         PointerSolver.Solver.PcodeDeducer.BoolBinOp
@@ -75,7 +86,6 @@ library pointer-solver-lib
         PointerSolver.Solver.PcodeDeducer.Trunc
         PointerSolver.Solver.PcodeDeducer.UnknownOp
         PointerSolver.Solver.Solver
-        PointerSolver.Solver.BasicBlockSolver
         PointerSolver.Solver.UDChain.Context
         PointerSolver.Solver.UDChain.UDChain
         PointerSolver.Type.BasicBlock.BasicBlock
@@ -91,13 +101,6 @@ library pointer-solver-lib
         PointerSolver.Type.Symbol.Id
         PointerSolver.Type.Symbol.Symbol
         PointerSolver.Type.Varnode.Varnode
-        PointerSolver.ControlflowGraph
-        PointerSolver.Parser.BasicBlock
-        PointerSolver.Parser.BasicBlockId
-        PointerSolver.Parser.Pcode
-        PointerSolver.Parser.PcodeOp
-        PointerSolver.Parser.PcodeId
-        PointerSolver.Parser.Metadata
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -105,13 +108,15 @@ library pointer-solver-lib
         , aeson       ^>=2.1.2.1
         , base        ^>=4.17.2.0
         , containers
+        , json        ^>=0.11
         , mtl
         , split
         , text
         , vector
 
     ghc-options:
-        -Wunused-imports -Werror -Wunused-matches -Wunused-local-binds
+
+    -- -Wunused-imports -Werror -Wunused-matches -Wunused-local-binds
 
     hs-source-dirs:   lib
     default-language: Haskell2010

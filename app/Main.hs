@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wno-unused-local-binds #-}
 
 module Main where
@@ -9,6 +10,7 @@ import Data.Function ((&))
 import qualified Data.Map as Map
 import Data.Maybe (fromJust, isJust)
 import qualified Data.Set as Set
+import PointerSolver.Parser.Metadata (Metadata)
 import PointerSolver.Solver.Context (Context)
 import qualified PointerSolver.Solver.Context as Solver.Context
 import qualified PointerSolver.Solver.FSM.States as Type
@@ -17,6 +19,8 @@ import PointerSolver.Solver.UDChain.UDChain (udChain)
 import qualified PointerSolver.Type.Function as Function
 import qualified PointerSolver.Type.Metadata as Metadata
 import qualified PointerSolver.Type.Symbol.Symbol as Symbol
+import Text.JSON
+import Text.Show.Pretty (ppShow)
 
 metadata :: IO Metadata.Metadata
 metadata = do
@@ -86,25 +90,35 @@ calResult f ctx =
       fnSet = Set.difference solverNegative ghidraNegative
    in (Set.size tpSet, Set.size fpSet, Set.size tnSet, Set.size fnSet)
 
+-- main :: IO ()
+-- main = do
+--   fs <- functions
+--   let ctxs = map handleFunction fs
+
+--   let results = zipWith calResult fs ctxs
+--   let merged = foldr (\(a, b, c, d) (a', b', c', d') -> (a + a', b + b', c + c', d + d')) (0, 0, 0, 0) results
+
+--   putStrLn "Result:"
+--   putStrLn $ "    True Positive: " ++ show (merged & (\(a, _, _, _) -> a))
+--   putStrLn $ "    False Positive: " ++ show (merged & (\(_, a, _, _) -> a))
+--   putStrLn $ "    True Negative: " ++ show (merged & (\(_, _, a, _) -> a))
+--   putStrLn $ "    False Negative: " ++ show (merged & (\(_, _, _, a) -> a))
+--   putStrLn $ "    Accuracy (Positive): " ++ show (merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b)))
+--   putStrLn $ "    Accuracy (Negative): " ++ show (merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b)))
+
+-- printf "True Positive: %d\n" $ merged & (\(a, _, _, _) -> a)
+-- printf "False Positive: %d\n" $ merged & (\(_, a, _, _) -> a)
+-- printf "True Negative: %d\n" $ merged & (\(_, _, a, _) -> a)
+-- printf "False Negative: %d\n" $ merged & (\(_, _, _, a) -> a)
+-- printf "Accuracy (Positive): %f\n" $ merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b))
+-- printf "Accuracy (Negative): %f\n" $ merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b))
+
 main :: IO ()
 main = do
-  fs <- functions
-  let ctxs = map handleFunction fs
+  let file = "main.json"
+  jsonStr <- readFile file
+  let output :: Result Metadata = decode jsonStr
 
-  let results = zipWith calResult fs ctxs
-  let merged = foldr (\(a, b, c, d) (a', b', c', d') -> (a + a', b + b', c + c', d + d')) (0, 0, 0, 0) results
-
-  putStrLn "Result:"
-  putStrLn $ "    True Positive: " ++ show (merged & (\(a, _, _, _) -> a))
-  putStrLn $ "    False Positive: " ++ show (merged & (\(_, a, _, _) -> a))
-  putStrLn $ "    True Negative: " ++ show (merged & (\(_, _, a, _) -> a))
-  putStrLn $ "    False Negative: " ++ show (merged & (\(_, _, _, a) -> a))
-  putStrLn $ "    Accuracy (Positive): " ++ show (merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b)))
-  putStrLn $ "    Accuracy (Negative): " ++ show (merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b)))
-
-  -- printf "True Positive: %d\n" $ merged & (\(a, _, _, _) -> a)
-  -- printf "False Positive: %d\n" $ merged & (\(_, a, _, _) -> a)
-  -- printf "True Negative: %d\n" $ merged & (\(_, _, a, _) -> a)
-  -- printf "False Negative: %d\n" $ merged & (\(_, _, _, a) -> a)
-  -- printf "Accuracy (Positive): %f\n" $ merged & (\(a, b, _, _) -> fromIntegral a / fromIntegral (a + b))
-  -- printf "Accuracy (Negative): %f\n" $ merged & (\(_, _, a, b) -> fromIntegral a / fromIntegral (a + b))
+  case output of
+    Error err -> putStrLn err
+    Ok output -> putStrLn $ ppShow output

@@ -4,62 +4,67 @@
 
 module PointerSolver.Parser.Metadata where
 
-import Data.Aeson (FromJSON (parseJSON), FromJSONKey (fromJSONKey), Key, Object, Value, fromJSON, withObject, (.:))
+import Data.Aeson (FromJSON (parseJSON), FromJSONKey (fromJSONKey), Key, Object, Value (Object), fromJSON, withObject, (.:))
 import Data.Aeson.KeyMap
+import qualified Data.Aeson.KeyMap as KeyMap
 import Data.Aeson.Types (Parser)
 import Data.Function ((&))
 import Data.List.Split.Internals (Chunk (Text))
-import Data.Map (Map)
+import Data.Map (mapKeys, (!))
 import qualified Data.Map as Map
+import Data.Map.Strict (Map)
 import Data.Text
-import GHC.Generics (Generic)
+import GHC.Generics (Generic, Meta)
 import PointerSolver.Parser.BasicBlock (BasicBlock)
 import PointerSolver.Parser.BasicBlockId (BasicBlockId (BasicBlockId))
 import PointerSolver.Parser.Pcode (Pcode, Varnode)
 import PointerSolver.Parser.PcodeId (PcodeId)
 import PointerSolver.Parser.Symbol (Symbol)
 import PointerSolver.Parser.SymbolId (SymbolId)
+import Text.JSON
 
 newtype Metadata = Metadata
   { f :: [Function]
   }
   deriving (Generic, Show)
 
-instance FromJSON Metadata
+instance JSON Metadata where
+  readJSON :: JSValue -> Result Metadata
+  readJSON (JSObject obj) = Metadata <$> func_list
+    where
+      func_list = valFromObj "functions" obj
+  readJSON _ = Error "Metadata must be an object"
+
+  showJSON :: Metadata -> JSValue
+  showJSON _ = undefined
 
 data Function = Function
   { name :: String,
     entry :: String,
     exit :: String,
     varnode :: [Varnode],
-    basicblock :: Map BasicBlockId BasicBlock,
-    pcode :: Map PcodeId Pcode,
-    symbol :: Map SymbolId Symbol
+    basicblock :: Map BasicBlockId BasicBlock
+    -- ,
+    -- pcode :: Map PcodeId Pcode,
+    -- symbol :: Map SymbolId Symbol
   }
   deriving (Generic, Show)
 
--- instance FromJSON Function where
---   parseJSON :: Value -> Parser Function
---   parseJSON = withObject "Function" $ \o ->
---     let name = o .: "name"
---         entry = o .: "entry"
---         exit = o .: "exit"
---         varnode = o .: "varnodes"
---         basicblock = parseBasicBlock o
---         pcode = o .: "pcodes"
---         symbol = o .: "symbols"
---      in Function <$> name <*> entry <*> exit <*> varnode <*> basicblock <*> pcode <*> symbol
+instance JSON Function where
+  readJSON :: JSValue -> Result Function
+  readJSON (JSObject obj) = Function <$> name <*> entry <*> exit <*> varnode <*> basicblock
+    where
+      -- <*> basicblock <*> pcode <*> symbol
 
--- parseBasicBlock :: Object -> Parser (Map BasicBlockId BasicBlock)
-parseBasicBlock o = do
-  let map = toMap o
-  map' <- Map.map (parseJSON :: Value -> Parser BasicBlock) map
+      name = valFromObj "name" obj
+      entry = valFromObj "entry" obj
+      exit = valFromObj "exit" obj
+      varnode = valFromObj "varnodes" obj
+      basicblock = readJSON (JSObject obj) :: Result (Map BasicBlockId BasicBlock)
 
-  map'
+  -- pcode = valFromObj "pcode" obj
+  -- symbol = valFromObj "symbol" obj
+  readJSON _ = Error "Function must be an object"
 
--- parseKeyValue :: Key -> Value -> Parser (BasicBlockId, BasicBlock)
--- parseKeyValue k v = do
---   -- key <- parseBasicBlockId k
---   -- value <- parseJSON v
---   -- pure (key, value)
---   undefined
+  showJSON :: Function -> JSValue
+  showJSON _ = undefined

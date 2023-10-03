@@ -16,4 +16,4 @@ data Symbol = Symbol
   }
   deriving (Generic, Show)
 
-instance FromJSON Symbol
+-- instance FromJSON Symbol
