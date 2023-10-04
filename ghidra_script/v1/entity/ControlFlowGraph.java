@@ -1,4 +1,5 @@
-package entity;
+package v1.entity;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,10 +7,43 @@ import java.util.List;
 import java.util.Map;
 
 import ghidra.program.model.pcode.HighFunction;
+import ghidra.program.model.pcode.PcodeBlockBasic;
 import ghidra.program.model.pcode.PcodeOp;
 import utils.Utils;
 
 public class ControlFlowGraph {
+    public class BasicBlockContext {
+        public List<String> preds = new ArrayList<String>();
+        public List<String> succs = new ArrayList<String>();
+
+        public BasicBlockContext(PcodeBlockBasic pcodeBlockBasic) {
+            for (int i = 0; i < pcodeBlockBasic.getInSize(); i++) {
+                var in = pcodeBlockBasic.getIn(i);
+                preds.add(in.getStart().toString());
+            }
+
+            for (int i = 0; i < pcodeBlockBasic.getOutSize(); i++) {
+                var out = pcodeBlockBasic.getOut(i);
+                succs.add(out.getStart().toString());
+            }
+        }
+
+        public List<String> getPreds() {
+            return preds;
+        }
+
+        public void setPreds(List<String> preds) {
+            this.preds = preds;
+        }
+
+        public List<String> getSuccs() {
+            return succs;
+        }
+
+        public void setSuccs(List<String> succs) {
+            this.succs = succs;
+        }
+    }
 
     public class PCodeContext {
         public List<String> preds = new ArrayList<String>();
@@ -71,7 +105,17 @@ public class ControlFlowGraph {
         }
     }
 
+    public Map<String, BasicBlockContext> basicblocks = new HashMap<>();
+
     public Map<String, PCodeContext> pcodes = new HashMap<>();
+
+    public Map<String, BasicBlockContext> getBasicblocks() {
+        return basicblocks;
+    }
+
+    public void setBasicblocks(Map<String, BasicBlockContext> basicblocks) {
+        this.basicblocks = basicblocks;
+    }
 
     public Map<String, PCodeContext> getPcodes() {
         return pcodes;
@@ -83,9 +127,7 @@ public class ControlFlowGraph {
 
     public ControlFlowGraph(Function ctx, HighFunction hF) {
         for (var basicblock : hF.getBasicBlocks()) {
-
-            var bb = ctx.basicblocks.get(basicblock.getStart().toString());
-   
+            basicblocks.put(basicblock.getStart().toString(), new BasicBlockContext(basicblock));
 
             var it = basicblock.getIterator();
             while (it.hasNext()) {
