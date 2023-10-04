@@ -19,12 +19,19 @@ import PointerSolver.Solver.UDChain.UDChain (udChain)
 import qualified PointerSolver.Type.Function as Function
 import qualified PointerSolver.Type.Metadata as Metadata
 import qualified PointerSolver.Type.Symbol.Symbol as Symbol
-import Text.JSON
 import Text.Show.Pretty (ppShow)
 
 metadata :: IO Metadata.Metadata
 metadata = do
   let file = "main.json"
+  jsonStr <- readFile file
+  case Data.Aeson.eitherDecode $ pack jsonStr of
+    Left err -> error err
+    Right value -> return value
+
+metadata' :: IO Metadata
+metadata' = do
+  let file = "main-1.json"
   jsonStr <- readFile file
   case Data.Aeson.eitherDecode $ pack jsonStr of
     Left err -> error err
@@ -115,10 +122,6 @@ calResult f ctx =
 
 main :: IO ()
 main = do
-  let file = "main.json"
-  jsonStr <- readFile file
-  let output :: Result Metadata = decode jsonStr
+  meta <- metadata'
 
-  case output of
-    Error err -> putStrLn err
-    Ok output -> putStrLn $ ppShow output
+  putStrLn $ ppShow meta

@@ -9,11 +9,11 @@ import PointerSolver.Parser.SymbolId (SymbolId)
 
 data Symbol = Symbol
   { id :: SymbolId,
-    data_type :: String,
+    dataType :: String,
     length :: Int,
-    is_pointer :: Bool,
-    repr :: Maybe Varnode
+    isPointer :: Bool,
+    representative :: Maybe Varnode
   }
   deriving (Generic, Show)
 
--- instance FromJSON Symbol
+instance FromJSON Symbol

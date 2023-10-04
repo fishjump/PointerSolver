@@ -33,7 +33,6 @@ executable pointer-solver
         , base                ^>=4.17.2.0
         , bytestring
         , containers
-        , json                ^>=0.11
         , pointer-solver-lib
         , pretty-show
 
@@ -108,7 +107,6 @@ library pointer-solver-lib
         , aeson       ^>=2.1.2.1
         , base        ^>=4.17.2.0
         , containers
-        , json        ^>=0.11
         , mtl
         , split
         , text
